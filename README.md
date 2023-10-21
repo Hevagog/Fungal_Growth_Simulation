@@ -8,3 +8,5 @@ https://www.nature.com/articles/s41598-023-35327-w
 Other approach to simulation:\
 https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0143400
 
+Newfound materials:\
+https://link.springer.com/content/pdf/10.1007/BF02460715.pdf
