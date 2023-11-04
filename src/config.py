@@ -13,3 +13,8 @@ Aspergillus_oryzae = {
     "k_tip2": 75,  # difference between the maximum extension rate and the initial tip extension rate
 }
 
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+WHITE = (255, 255, 255)
+SPORE_COLOR = (0, 0, 255)
+HYPHA_COLOR = (0, 255, 0)
