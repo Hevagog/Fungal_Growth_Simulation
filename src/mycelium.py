@@ -1,5 +1,6 @@
 import math
 import random
+from . import config as cfg
 
 
 class Fungi:
@@ -18,25 +19,6 @@ class Fungi:
 
     def kill_spore(self, spore):
         self.spores.remove(spore)
-
-    def update(self):
-        for spore in self.spores:
-            spore.update()
-            if not spore.is_alive:
-                self.kill_spore(spore)
-            if spore.reproduce:
-                self.add_hypha(
-                    Hypha(origin_x=spore.origin_x, origin_y=spore.origin_y))
-                spore.reproduce = False
-
-        for hypha in self.hyphae:
-            hypha.update()
-            if not hypha.is_alive:
-                self.kill_hypha(hypha)
-            elif hypha.reproduce:
-                self.add_hypha(
-                    Hypha(origin_x=hypha.tip_x, origin_y=hypha.tip_y))
-                hypha.reproduce = False
 
 
 class Spore:
@@ -91,10 +73,17 @@ class Hypha:
         l_bri = self.calc_branch_length()
         return (self.k_tip2 * l_bri / (l_bri * self.k_t)) * self.S / (self.S + self.k_s)
 
+    def in_bounds(self):
+        if self.tip_x <= 1 or self.tip_x >= cfg.SCREEN_WIDTH - 1 or self.tip_y <= 1 or self.tip_y >= cfg.SCREEN_HEIGHT-1:
+            return False
+        return True
+
     def update(self):
-        if random.random() < self.p_branch:
-            self.reproduce = True
-        if random.random() < self.p_death:
+        if random.random() < self.p_death or self.S <= 0 or not self.in_bounds():
             self.is_alive = False
-        else:
+
+        if random.random() < self.p_branch and self.is_alive and self.in_bounds():
+            self.reproduce = True
+
+        if self.is_alive:
             self.grow_direction()
