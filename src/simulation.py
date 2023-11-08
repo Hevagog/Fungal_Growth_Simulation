@@ -1,5 +1,6 @@
 import pygame
 import random
+import numpy as np
 import time
 from . import mycelium as myc
 from . import config as cfg
@@ -28,6 +29,8 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
             hypha.is_alive = False
         else:
             hypha.update()
+            substrate.add_multiple_drain_points(hypha.drain_points)
+            hypha.drain_points = []
         if not hypha.is_alive:
             fungi.kill_hypha(hypha)
         elif hypha.reproduce:

@@ -1,5 +1,7 @@
 import math
 import random
+
+from . import helper as hlp
 from . import config as cfg
 
 
@@ -56,15 +58,23 @@ class Hypha:
         self.is_alive = True
         self.reproduce = False
         self.angle = random.uniform(0, 2 * math.pi)
-        self.tip_x = origin_x + unit_radius * math.cos(self.angle)
-        self.tip_y = origin_y + unit_radius * math.sin(self.angle)
+        self.tip_x = self.origin_x + self.unit_radius * \
+            math.cos(self.angle)
+        self.tip_y = self.origin_y + self.unit_radius * \
+            math.sin(self.angle)
+        self.drain_points = hlp.calculate_points_on_line(
+            (self.origin_x, self.origin_y), (self.tip_x, self.tip_y))
 
     def grow_direction(self):
+        old_tip_x = self.tip_x
+        old_tip_y = self.tip_y
         extension_coefficient = self.calc_tip_extension_rate()
         self.tip_x += self.unit_radius * \
             extension_coefficient * math.cos(self.angle)
         self.tip_y += self.unit_radius * \
             extension_coefficient * math.sin(self.angle)
+        self.drain_points += hlp.calculate_points_on_line(
+            (old_tip_x, old_tip_y), (self.tip_x, self.tip_y))
 
     def calc_branch_length(self):
         return math.sqrt((self.tip_x - self.origin_x) ** 2 + (self.tip_y - self.origin_y) ** 2)
@@ -87,3 +97,8 @@ class Hypha:
 
         if self.is_alive:
             self.grow_direction()
+
+
+# if __name__ == "__main__":
+#     hypha = Hypha(0, 0)
+#     print(hypha.tip_x, hypha.tip_y)

@@ -1,4 +1,4 @@
 from src import simulation as sim
 
 if __name__ == "__main__":
-    sim.start()
+    sim.start(4)
