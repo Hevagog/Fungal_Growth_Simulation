@@ -9,9 +9,13 @@ class Fungi:
     def __init__(self):
         self.spores = []
         self.hyphae = []
+        self.obstacles = []
 
     def add_hypha(self, hypha):
         self.hyphae.append(hypha)
+
+    def add_obstacle(self, obstacle):
+        self.obstacles.append(obstacle)
 
     def add_spore(self, spore):
         self.spores.append(spore)
@@ -24,7 +28,7 @@ class Fungi:
 
 
 class Spore:
-    def __init__(self, origin_x, origin_y, growth_probability=0.02, death_probability=0.0005, S_0=5000):
+    def __init__(self, origin_x, origin_y, growth_probability=0.02, death_probability=0.0005, S_0=5000, from_hypha=False):
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.growth_probability = growth_probability
@@ -32,6 +36,7 @@ class Spore:
         self.S = S_0
         self.reproduce = False
         self.is_alive = True
+        self.from_hypha = from_hypha
 
     def update(self):
         if random.random() < self.death_probability:
@@ -97,8 +102,3 @@ class Hypha:
 
         if self.is_alive:
             self.grow_direction()
-
-
-# if __name__ == "__main__":
-#     hypha = Hypha(0, 0)
-#     print(hypha.tip_x, hypha.tip_y)
