@@ -1,12 +1,11 @@
 import pygame
 import random
-import numpy as np
-import time
 
 from . import obstacle as obs
 from . import mycelium as myc
 from . import config as cfg
 from . import substrate as sub
+from . import scarcity as scr
 
 
 def add_spore(fungi: myc.Fungi, substrate: sub.Substrate):
@@ -23,7 +22,10 @@ def add_spore(fungi: myc.Fungi, substrate: sub.Substrate):
                 break
         if outside_obstacle:
             break
-    fungi.add_spore(myc.Spore(origin_x=x, origin_y=y))
+    concentration = substrate.concentration[x, y]
+    print(concentration)
+    fungi.add_spore(myc.Spore(origin_x=x, origin_y=y,
+                    substrate_concentration_at_origin=concentration))
     substrate.add_drain_point(x, y)
 
 
@@ -36,24 +38,28 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
             spore.update()
         if not spore.is_alive:
             fungi.kill_spore(spore)
+            spore.reproduce = False
         if spore.reproduce:
-            fungi.add_hypha(
-                myc.Hypha(origin_x=spore.origin_x, origin_y=spore.origin_y))
-            substrate.add_drain_point(originx, originy)
-
+            concentration = substrate.concentration[originx, originy]
+            if concentration > 0:
+                fungi.add_hypha(
+                    myc.Hypha(origin_x=spore.origin_x, origin_y=spore.origin_y,
+                              substrate_concentration_at_origin=concentration))
+                substrate.add_drain_point(originx, originy)
             spore.reproduce = False
 
     for hypha in fungi.hyphae:
         originx, originy = int(hypha.origin_x), int(hypha.origin_y)
-
         for obs in fungi.obstacles:
             collision = obs.check_collision(hypha.tip_x, hypha.tip_y)
             if collision[0]:
                 hypha.is_alive = False
                 hypha.tip_x = collision[1][0]
                 hypha.tip_y = collision[1][1]
+                concentration = substrate.concentration[originx, originy]
                 fungi.add_spore(
-                    myc.Spore(origin_x=collision[1][0], origin_y=collision[1][1], from_hypha=True))
+                    myc.Spore(origin_x=collision[1][0], origin_y=collision[1][1], from_hypha=True,
+                              substrate_concentration_at_origin=concentration))
                 substrate.add_drain_point(
                     int(collision[1][0]), int(collision[1][1]))
                 break
@@ -67,9 +73,12 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
         if not hypha.is_alive:
             fungi.kill_hypha(hypha)
         elif hypha.reproduce:
-            fungi.add_hypha(
-                myc.Hypha(origin_x=hypha.tip_x, origin_y=hypha.tip_y))
-            substrate.add_drain_point(originx, originy)
+            concentration = substrate.concentration[originx, originy]
+            if concentration > 0:
+                fungi.add_hypha(
+                    myc.Hypha(origin_x=hypha.tip_x, origin_y=hypha.tip_y,
+                              substrate_concentration_at_origin=concentration))
+                substrate.add_drain_point(originx, originy)
             hypha.reproduce = False
 
     for point in substrate.drain_points:
@@ -79,12 +88,21 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
             substrate.drain_points.remove(point)
 
 
-def start(spores: int = 1, num_of_obstacles: int = 0, obstacle_size: int = 100):
+def start(spores: int = 1, num_of_obstacles: int = 0, obstacle_size: int = 100,
+          num_of_scarcity: int = 0, scarcity_radius: int = 80):
     pygame.init()
     running = True
     clock = pygame.time.Clock()
     substrate = sub.Substrate(cfg.SCREEN_WIDTH, cfg.SCREEN_HEIGHT, cfg.s_0)
     fungi = myc.Fungi()
+    for _ in range(num_of_scarcity):
+        x = random.randint(0, cfg.SCREEN_WIDTH)
+        y = random.randint(0, cfg.SCREEN_HEIGHT)
+        scarcity = scr.Scarcity(x, y, scarcity_radius)
+        fungi.add_scarcity(scarcity)
+        pygame.draw.circle(substrate.board, cfg.SCARCITY_COLOR,
+                           [x, y], scarcity.radius, 3)
+        substrate.add_dead_zone(x, y, scarcity.radius)
     for _ in range(num_of_obstacles):
         x = random.randint(0, cfg.SCREEN_WIDTH)
         y = random.randint(0, cfg.SCREEN_HEIGHT)

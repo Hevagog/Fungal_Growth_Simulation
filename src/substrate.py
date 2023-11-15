@@ -12,6 +12,7 @@ class Substrate:
         self.decrease_rate = decrease_rate
         self.board.fill(cfg.WHITE)
         self.drain_points = []
+        self.fungal_biomass = np.zeros((self.width, self.height))
 
     def add_drain_point(self, x, y):
         self.drain_points.append((x, y))
@@ -26,3 +27,10 @@ class Substrate:
             if self.concentration[point[0], point[1]] <= 0:
                 print("Concentration is 0 at point: ", point)
                 self.drain_points.remove(point)
+
+    def add_dead_zone(self, origin_x, origin_y, radius):
+        for x in range(origin_x - radius, origin_x + radius):
+            for y in range(origin_y - radius, origin_y + radius):
+                if (x > 0 and x < self.width) and (y > 0 and y < self.height):
+                    if (x - origin_x)**2 + (y - origin_y)**2 <= radius**2:
+                        self.concentration[x, y] = 0

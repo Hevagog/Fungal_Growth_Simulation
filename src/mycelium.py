@@ -10,9 +10,13 @@ class Fungi:
         self.spores = []
         self.hyphae = []
         self.obstacles = []
+        self.scarcities = []
 
     def add_hypha(self, hypha):
         self.hyphae.append(hypha)
+
+    def add_scarcity(self, scarcity):
+        self.scarcities.append(scarcity)
 
     def add_obstacle(self, obstacle):
         self.obstacles.append(obstacle)
@@ -28,12 +32,12 @@ class Fungi:
 
 
 class Spore:
-    def __init__(self, origin_x, origin_y, growth_probability=0.02, death_probability=0.0005, S_0=5000, from_hypha=False):
+    def __init__(self, origin_x, origin_y, substrate_concentration_at_origin, growth_probability=0.02, death_probability=0.0005, from_hypha=False):
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.growth_probability = growth_probability
         self.death_probability = death_probability
-        self.S = S_0
+        self.S = substrate_concentration_at_origin
         self.reproduce = False
         self.is_alive = True
         self.from_hypha = from_hypha
@@ -47,8 +51,8 @@ class Spore:
 
 
 class Hypha:
-    def __init__(self, origin_x, origin_y, initial_tip_extension_rate=80, max_extension_rate=5,
-                 branching_probability=0.02, substrate_concentration_at_origin=50000, k_t=5, k_s=200,
+    def __init__(self, origin_x, origin_y, substrate_concentration_at_origin, initial_tip_extension_rate=80, max_extension_rate=5,
+                 branching_probability=0.02, k_t=5, k_s=200,
                  death_probability=0.0005, unit_radius=1):
         self.origin_x = origin_x
         self.origin_y = origin_y
