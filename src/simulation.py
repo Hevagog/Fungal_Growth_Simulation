@@ -6,6 +6,7 @@ from . import mycelium as myc
 from . import config as cfg
 from . import substrate as sub
 from . import scarcity as scr
+from . import helper as hlp
 
 
 def add_spore(fungi: myc.Fungi, substrate: sub.Substrate):
@@ -82,9 +83,16 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
             hypha.reproduce = False
 
     for point in substrate.drain_points:
-        # for now decrease the concentration by a constant rate
-        substrate.concentration[point[0], point[1]] -= substrate.decrease_rate
+        growth_rate = hlp.sigmoid(
+            substrate.concentration[point[0], point[1]])
+        substrate.fungal_biomass[point[0], point[1]
+                                 ] += growth_rate*substrate.decrease_coefficient
+
+        decay_rate = hlp.sigmoid(substrate.fungal_biomass[point[0], point[1]])
+        substrate.concentration[point[0], point[1]
+                                ] -= decay_rate * substrate.decrease_coefficient
         if substrate.concentration[point[0], point[1]] <= 0:
+            # print("\t\t", "Concentration is 0 at point: ", point)
             substrate.drain_points.remove(point)
 
 

@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 def calculate_points_on_line(origin_coordinates, tip_coordinates):
@@ -37,5 +38,11 @@ def calculate_points_on_line(origin_coordinates, tip_coordinates):
     return points
 
 
+@staticmethod
 def l2_distance(point1, point2):
     return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+
+
+@staticmethod
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
