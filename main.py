@@ -1,4 +1,5 @@
 from src import simulation as sim
 
 if __name__ == "__main__":
-    sim.start(1, 8, num_of_scarcity=6, scarcity_radius=50)
+    sim.start(spores=3, num_of_obstacles=1,
+              num_of_scarcity=4, scarcity_radius=50)

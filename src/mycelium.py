@@ -32,7 +32,8 @@ class Fungi:
 
 
 class Spore:
-    def __init__(self, origin_x, origin_y, substrate_concentration_at_origin, growth_probability=0.02, death_probability=0.0005, from_hypha=False):
+    def __init__(self, origin_x, origin_y, substrate_concentration_at_origin, breed=0,
+                 growth_probability=0.02, death_probability=0.0005, from_hypha=False):
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.growth_probability = growth_probability
@@ -41,6 +42,8 @@ class Spore:
         self.reproduce = False
         self.is_alive = True
         self.from_hypha = from_hypha
+        self.breed_id = breed
+        self.color = cfg.HYPHA_COLORS[self.breed_id]
 
     def update(self):
         if random.random() < self.death_probability:
@@ -51,7 +54,8 @@ class Spore:
 
 
 class Hypha:
-    def __init__(self, origin_x, origin_y, substrate_concentration_at_origin, initial_tip_extension_rate=80, max_extension_rate=5,
+    def __init__(self, origin_x, origin_y, substrate_concentration_at_origin, breed=0,
+                 initial_tip_extension_rate=80, max_extension_rate=5,
                  branching_probability=0.02, k_t=5, k_s=200,
                  death_probability=0.0005, unit_radius=1):
         self.origin_x = origin_x
@@ -64,6 +68,9 @@ class Hypha:
         self.S = substrate_concentration_at_origin
         self.k_t = k_t
         self.k_s = k_s
+        self.breed_id = breed
+        self.color = cfg.HYPHA_COLORS[self.breed_id]
+
         self.is_alive = True
         self.reproduce = False
         self.angle = random.uniform(0, 2 * math.pi)
@@ -82,6 +89,14 @@ class Hypha:
             extension_coefficient * math.cos(self.angle)
         self.tip_y += self.unit_radius * \
             extension_coefficient * math.sin(self.angle)
+        if self.tip_x >= cfg.SCREEN_WIDTH:
+            self.tip_x = cfg.SCREEN_WIDTH - 1
+        if self.tip_x <= 0:
+            self.tip_x = 1
+        if self.tip_y >= cfg.SCREEN_HEIGHT:
+            self.tip_y = cfg.SCREEN_HEIGHT - 1
+        if self.tip_y <= 0:
+            self.tip_y = 1
         self.drain_points += hlp.calculate_points_on_line(
             (old_tip_x, old_tip_y), (self.tip_x, self.tip_y))
 
@@ -90,7 +105,8 @@ class Hypha:
 
     def calc_tip_extension_rate(self):
         l_bri = self.calc_branch_length()
-        return (self.k_tip2 * l_bri / (l_bri * self.k_t)) * self.S / (self.S + self.k_s)
+        return hlp.extention_functions[self.breed_id](l_bri)
+        # return (self.k_tip2 * l_bri / (l_bri * self.k_t)) * self.S / (self.S + self.k_s)
 
     def in_bounds(self):
         if self.tip_x <= 1 or self.tip_x >= cfg.SCREEN_WIDTH - 1 or self.tip_y <= 1 or self.tip_y >= cfg.SCREEN_HEIGHT-1:

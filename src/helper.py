@@ -1,6 +1,9 @@
 import math
 import numpy as np
 
+#
+SCALING_FACTOR = 1.e7
+
 
 def calculate_points_on_line(origin_coordinates, tip_coordinates):
     # Bresenham's line algorithm. Returns a list of points on a line between two points.
@@ -46,3 +49,23 @@ def l2_distance(point1, point2):
 @staticmethod
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
+
+
+@staticmethod
+def cinera_extention_Rate(length):
+    return 0.178 + 1/(0.0778 * math.exp(-0.195 * length)+3.92)
+
+
+@staticmethod
+def acutatum_extention_Rate(length):
+    return 1.78 + 0.092/(0.09096 * math.exp(-0.326 * length) + 0.589)
+
+
+@staticmethod
+def stoloifenr_extention_Rate(length):
+    return 5.8 + 1/(0.08016 * math.exp(-0.236 * length)+1.202)
+
+
+extention_functions = [cinera_extention_Rate,
+                       acutatum_extention_Rate,
+                       stoloifenr_extention_Rate]

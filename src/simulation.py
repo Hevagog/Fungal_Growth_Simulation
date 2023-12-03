@@ -9,7 +9,7 @@ from . import scarcity as scr
 from . import helper as hlp
 
 
-def add_spore(fungi: myc.Fungi, substrate: sub.Substrate):
+def add_spore(fungi: myc.Fungi, substrate: sub.Substrate, breed: int):
     outside_obstacle = False
     x, y = 0, 0
     while not outside_obstacle:
@@ -26,7 +26,7 @@ def add_spore(fungi: myc.Fungi, substrate: sub.Substrate):
     concentration = substrate.concentration[x, y]
     print(concentration)
     fungi.add_spore(myc.Spore(origin_x=x, origin_y=y,
-                    substrate_concentration_at_origin=concentration))
+                    substrate_concentration_at_origin=concentration, breed=breed))
     substrate.add_drain_point(x, y)
 
 
@@ -45,7 +45,8 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
             if concentration > 0:
                 fungi.add_hypha(
                     myc.Hypha(origin_x=spore.origin_x, origin_y=spore.origin_y,
-                              substrate_concentration_at_origin=concentration))
+                              substrate_concentration_at_origin=concentration,
+                              breed=spore.breed_id))
                 substrate.add_drain_point(originx, originy)
             spore.reproduce = False
 
@@ -60,7 +61,7 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
                 concentration = substrate.concentration[originx, originy]
                 fungi.add_spore(
                     myc.Spore(origin_x=collision[1][0], origin_y=collision[1][1], from_hypha=True,
-                              substrate_concentration_at_origin=concentration))
+                              substrate_concentration_at_origin=concentration, breed=hypha.breed_id))
                 substrate.add_drain_point(
                     int(collision[1][0]), int(collision[1][1]))
                 break
@@ -78,17 +79,21 @@ def grow_fungi(fungi: myc.Fungi, substrate: sub.Substrate):
             if concentration > 0:
                 fungi.add_hypha(
                     myc.Hypha(origin_x=hypha.tip_x, origin_y=hypha.tip_y,
+                              breed=hypha.breed_id,
                               substrate_concentration_at_origin=concentration))
                 substrate.add_drain_point(originx, originy)
             hypha.reproduce = False
 
     for point in substrate.drain_points:
+        # Technically it's growth rate, bu the name is misleading
         growth_rate = hlp.sigmoid(
             substrate.concentration[point[0], point[1]])
+
         substrate.fungal_biomass[point[0], point[1]
                                  ] += growth_rate*substrate.decrease_coefficient
 
         decay_rate = hlp.sigmoid(substrate.fungal_biomass[point[0], point[1]])
+
         substrate.concentration[point[0], point[1]
                                 ] -= decay_rate * substrate.decrease_coefficient
         if substrate.concentration[point[0], point[1]] <= 0:
@@ -115,9 +120,9 @@ def start(spores: int = 1, num_of_obstacles: int = 0, obstacle_size: int = 100,
         x = random.randint(0, cfg.SCREEN_WIDTH)
         y = random.randint(0, cfg.SCREEN_HEIGHT)
         fungi.add_obstacle(obs.Obstacle(x, y, obstacle_size))
-
-    for _ in range(spores):
-        add_spore(fungi, substrate)
+    breeds_ = [0, 1, 2]
+    for i in range(spores):
+        add_spore(fungi, substrate, breeds_[i])
 
     while running:
         print(len(fungi.spores), len(fungi.hyphae), len(substrate.drain_points))
@@ -140,7 +145,7 @@ def start(spores: int = 1, num_of_obstacles: int = 0, obstacle_size: int = 100,
 
         for hypha in fungi.hyphae:
             if hypha.is_alive:
-                pygame.draw.line(substrate.board, cfg.HYPHA_COLOR,
+                pygame.draw.line(substrate.board, hypha.color,
                                  (int(hypha.origin_x), int(hypha.origin_y)),
                                  (int(hypha.tip_x), int(hypha.tip_y)), 1)
 
