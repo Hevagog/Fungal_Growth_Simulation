@@ -45,7 +45,7 @@ class Spore:
         self.breed_id = breed
         self.color = cfg.HYPHA_COLORS[self.breed_id]
 
-    def update(self):
+    def die_or_reproduce(self):
         if random.random() < self.death_probability:
             self.is_alive = False
             return
