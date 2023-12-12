@@ -1,3 +1,4 @@
+import pygame
 import math
 import random
 
@@ -56,7 +57,7 @@ class Spore:
 class Hypha:
     def __init__(self, origin_x, origin_y, substrate_concentration_at_origin, breed=0,
                  initial_tip_extension_rate=80, max_extension_rate=5,
-                 branching_probability=0.02, k_t=5, k_s=200,
+                 branching_probability=0.025, k_t=5, k_s=200,
                  death_probability=0.0005, unit_radius=1):
         self.origin_x = origin_x
         self.origin_y = origin_y
@@ -104,8 +105,8 @@ class Hypha:
         return math.sqrt((self.tip_x - self.origin_x) ** 2 + (self.tip_y - self.origin_y) ** 2)
 
     def calc_tip_extension_rate(self):
-        l_bri = self.calc_branch_length()
-        return hlp.extention_functions[self.breed_id](l_bri)
+        # l_bri = self.calc_branch_length()
+        return hlp.extention_functions[self.breed_id](pygame.time.get_ticks()/1000)
         # return (self.k_tip2 * l_bri / (l_bri * self.k_t)) * self.S / (self.S + self.k_s)
 
     def in_bounds(self):

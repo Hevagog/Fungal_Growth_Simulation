@@ -1,5 +1,6 @@
 import pygame
 import random
+import numpy as np
 
 from . import obstacle as obs
 from . import mycelium as myc
@@ -10,30 +11,27 @@ from . import helper as hlp
 
 
 def add_spore(fungi: myc.Fungi, substrate: sub.Substrate, breed: int):
-    outside_obstacle = False
     x, y = random.randint(1, cfg.SCREEN_WIDTH -
-                          1), random.randint(1, cfg.SCREEN_HEIGHT-1)
-    if len(fungi.obstacles) > 0:
-        while not outside_obstacle:
-            for obs in fungi.obstacles:
-                if not obs.check_collision(x, y)[0]:
-                    outside_obstacle = True
-                else:
-                    outside_obstacle = False
-                    break
-            if outside_obstacle:
-                break
-            x = random.randint(0, cfg.SCREEN_WIDTH)
-            y = random.randint(0, cfg.SCREEN_HEIGHT)
+                          1), random.randint(1, cfg.SCREEN_HEIGHT - 1)
     concentration = substrate.concentration[x, y]
-    print(concentration)
-    fungi.add_spore(myc.Spore(origin_x=x, origin_y=y,
-                    substrate_concentration_at_origin=concentration, breed=breed))
-    substrate.add_drain_point(x, y)
+
+    if len(fungi.obstacles) > 0:
+        obstacles = [obs for obs in fungi.obstacles if not obs.check_collision(x, y)[
+            0]]
+        if obstacles:
+            fungi.add_spore(myc.Spore(origin_x=x, origin_y=y,
+                                      substrate_concentration_at_origin=concentration, breed=breed))
+            substrate.add_drain_point(x, y)
+    else:
+        fungi.add_spore(myc.Spore(origin_x=x, origin_y=y,
+                                  substrate_concentration_at_origin=concentration, breed=breed))
+        substrate.add_drain_point(x, y)
 
 
 def update_spore(fungi: myc.Fungi, substrate: sub.Substrate):
-    for spore in fungi.spores:
+    alive_spores = [spore for spore in fungi.spores if spore.is_alive]
+
+    for spore in alive_spores:
         origin_x, origin_y = int(spore.origin_x), int(spore.origin_y)
         concentration = substrate.concentration[origin_x, origin_y]
 
@@ -56,24 +54,26 @@ def update_spore(fungi: myc.Fungi, substrate: sub.Substrate):
 
 
 def update_hypha(fungi: myc.Fungi, substrate: sub.Substrate):
+    obstacles = fungi.obstacles
+    concentration = substrate.concentration
+
     for hypha in fungi.hyphae:
         origin_x, origin_y = int(hypha.origin_x), int(hypha.origin_y)
 
-        for obs in fungi.obstacles:
+        for obs in obstacles:
             collision = obs.check_collision(hypha.tip_x, hypha.tip_y)
 
             if collision[0]:
                 hypha.is_alive = False
                 hypha.tip_x, hypha.tip_y = collision[1][0], collision[1][1]
-                concentration = substrate.concentration[origin_x, origin_y]
                 fungi.add_spore(
                     myc.Spore(origin_x=collision[1][0], origin_y=collision[1][1], from_hypha=True,
-                              substrate_concentration_at_origin=concentration, breed=hypha.breed_id))
+                              substrate_concentration_at_origin=concentration[origin_x, origin_y], breed=hypha.breed_id))
                 substrate.add_drain_point(
                     int(collision[1][0]), int(collision[1][1]))
                 break
 
-        if hypha.is_alive and substrate.concentration[origin_x, origin_y] <= 0:
+        if hypha.is_alive and concentration[origin_x, origin_y] <= 0:
             hypha.is_alive = False
         else:
             hypha.update()
@@ -83,19 +83,18 @@ def update_hypha(fungi: myc.Fungi, substrate: sub.Substrate):
         if not hypha.is_alive:
             fungi.kill_hypha(hypha)
         elif hypha.reproduce:
-            concentration = substrate.concentration[origin_x, origin_y]
-
-            if concentration > 0:
+            if concentration[origin_x, origin_y] > 0:
                 fungi.add_hypha(
                     myc.Hypha(origin_x=hypha.tip_x, origin_y=hypha.tip_y,
                               breed=hypha.breed_id,
-                              substrate_concentration_at_origin=concentration))
+                              substrate_concentration_at_origin=concentration[origin_x, origin_y]))
                 substrate.add_drain_point(origin_x, origin_y)
             hypha.reproduce = False
 
 
 def update_substrate(substrate: sub.Substrate):
-    for point in substrate.drain_points:
+    drain_points_copy = set(substrate.drain_points.copy())
+    for point in drain_points_copy:
         substrate.update_concentration(point[0], point[1])
         if substrate.concentration[point[0], point[1]] <= 0.5:
             substrate.drain_points.remove(point)
@@ -129,7 +128,7 @@ def start(spores: int = 1, num_of_obstacles: int = 0, obstacle_size: int = 100,
         fungi.add_obstacle(obs.Obstacle(x, y, obstacle_size))
     # for now there are only 3 breeds (0, 1, 2)
     for _ in range(spores):
-        add_spore(fungi, substrate, breed=1)
+        add_spore(fungi, substrate, breed=0)
     # Main loop
     while running:
         print(len(fungi.spores), len(fungi.hyphae), len(substrate.drain_points))

@@ -53,17 +53,17 @@ def sigmoid(x):
 
 @staticmethod
 def cinera_extention_Rate(length):
-    return 0.178 + 1/(0.0778 * math.exp(-0.195 * length)+3.92)
+    return 0.178 + 1/(77800 * math.exp(-0.195 * length)+3.92)
 
 
 @staticmethod
 def acutatum_extention_Rate(length):
-    return 1.78 + 0.092/(0.09096 * math.exp(-0.326 * length) + 0.589)
+    return 0.178 + 0.092/(9096 * math.exp(-0.326 * length) + 0.589)
 
 
 @staticmethod
 def stoloifenr_extention_Rate(length):
-    return 5.8 + 1/(0.08016 * math.exp(-0.236 * length)+1.202)
+    return 0.58 + 1/(80.15 * math.exp(-0.236 * length)+1.202)
 
 
 extention_functions = [cinera_extention_Rate,
